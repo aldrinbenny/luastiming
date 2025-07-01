@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luas Timings</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-image: url('images/background.jpg');
+
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #ffffff; /* White text for contrast */
+            letter-spacing: -1px;
+        }
+
+        /* Form and Input Styles */
+        label {
+            font-size: 1.2rem;
+            color: #ffffff;
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: block;
+        }
+
+        select, button {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px 18px;
+            font-size: 1.1rem;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 1px solid #d1d8e0;
+            background-color: #ffffff;
+            color: #333;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease-in-out;
+        }
+
+        select:focus, button:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+        }
+
+        button {
+            background-color: #3498db;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Result Box Styling */
+        #results {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 30px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+
+        #results.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #27ae60;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            background-color: #f9fafb;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            font-size: 1rem;
+            color: #333;
+            transition: background-color 0.3s ease;
+        }
+
+        ul li:hover {
+            background-color: #e8f5e9;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            label {
+                font-size: 1rem;
+            }
+
+            select, button {
+                max-width: 100%;
+                font-size: 1rem;
+            }
+
+            #results {
+                max-width: 90%;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Luas Timings</h1>
+
+    <label for="line">Choose a Line:</label>
+    <select id="line" onchange="updateStops()">
+        <option value="green">Green Line</option>
+        <option value="red">Red Line</option>
+    </select>
+
+    <label for="stop">Choose a Stop:</label>
+    <select id="stop">
+        <!-- Stops will be populated here dynamically -->
+    </select>
+
+    <button onclick="fetchTimings()">Get Timings</button>
+
+    <div id="results"></div>
+
+    <script>
+        // Function to update the stop dropdown based on selected line
+        function updateStops() {
+            const lineSelect = document.getElementById("line");
+            const stopSelect = document.getElementById("stop");
+
+            // Clear existing options
+            stopSelect.innerHTML = "";
+
+            // Define stops for both lines
+            const greenLineStops = [
+                { name: "Brides Glen", code: "BRI" },
+                { name: "Cherrywood", code: "CHE" },
+                { name: "Laughanstown", code: "LAU" },
+                { name: "Carrickmines", code: "CAR" },
+                { name: "Brennanstown", code: "BRE" },
+                { name: "Leopardstown Valley", code: "LEO" },
+                { name: "Ballyogan Wood", code: "BAW" },
+                { name: "Racecourse", code: "RAC" },
+                { name: "Sandyford", code: "SAN" },
+                { name: "Stillorgan", code: "STI" },
+                { name: "Dundrum", code: "DUN" },
+                { name: "Balally", code: "BAL" },
+                { name: "Kilmacud", code: "KIL" },
+                { name: "Windy Arbour", code: "WIN" },
+                { name: "Beechwood", code: "BEE" },
+                { name: "Cowper", code: "COW" },
+                { name: "Milkwood", code: "MIL" },
+                { name: "Ranelagh", code: "RAN" },
+                { name: "Charlemont", code: "CHA" },
+                { name: "St. Stephen's Green", code: "STS" },
+                { name: "Dawson", code: "DAW" },
+                { name: "Westmoreland", code: "WES" },
+                { name: "Trinity", code: "TRI" },
+                { name: "Marlborough", code: "MAR" },
+                { name: "Parnell", code: "PAR" },
+                { name: "Dominick", code: "DOM" },
+                { name: "Broadstone", code: "BRO" },
+                { name: "Grangegorman", code: "GRA" },
+                { name: "Phibsborough", code: "PHI" },
+                { name: "Cabra", code: "CAB" },
+                { name: "Broombridge", code: "BRO" }
+            ];
+
+            const redLineStops = [
+                { name: "Tallaght", code: "TAL" },
+                { name: "Cookstown", code: "COO" },
+                { name: "Belgard", code: "BEL" },
+                { name: "Red Cow", code: "RED" },
+                { name: "Kingswood", code: "KIN" },
+                { name: "Kylemore", code: "KYL" },
+                { name: "Bluebell", code: "BLU" },
+                { name: "Blackhorse", code: "BLA" },
+                { name: "Suir Road", code: "SUI" },
+                { name: "Goldenbridge", code: "GOL" },
+                { name: "Drimnagh", code: "DRI" },
+                { name: "Fatima", code: "FAT" },
+                { name: "Rialto", code: "RIA" },
+                { name: "James's Hospital", code: "JAM" },
+                { name: "Heuston", code: "HST" },
+                { name: "Museum", code: "MUS" },
+                { name: "Smithfield", code: "SMI" },
+                { name: "Four Courts", code: "FOU" },
+                { name: "Jervis", code: "JER" },
+                { name: "Abbey Street", code: "ABB" },
+                { name: "Busáras", code: "BUS" },
+                { name: "Connolly", code: "CON" },
+                { name: "George's Dock", code: "GEO" },
+                { name: "Mayor Square", code: "MAY" },
+                { name: "Spencer Dock", code: "SPE" },
+                { name: "Point Village", code: "POI" }
+            ];
+
+            // Select the appropriate stops
+            let stops = lineSelect.value === "green" ? greenLineStops : redLineStops;
+
+            // Add stops to dropdown
+            stops.forEach(stop => {
+                let option = document.createElement("option");
+                option.value = stop.code;
+                option.textContent = stop.name;
+                stopSelect.appendChild(option);
+            });
+        }
+
+        // Initialize stop dropdown
+        window.onload = updateStops;
+
+        // Fetch Timings based on selected stop
+        async function fetchTimings() {
+            const stopSelect = document.getElementById("stop");
+            const stopCode = stopSelect.value.trim();
+            const resultsDiv = document.getElementById("results");
+
+            if (!stopCode) {
+                resultsDiv.innerHTML = "<p class='error'>⚠️ Please select a valid stop!</p>";
+                return;
+            }
+
+            const apiUrl = `https://luasforecasts.rpa.ie/xml/get.ashx?action=forecast&stop=${stopCode}&encrypt=false`;
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
+
+            try {
+                let response = await fetch(proxyUrl);
+                let data = await response.json();
+                let xmlText = data.contents;
+
+                let parser = new DOMParser();
+                let xml = parser.parseFromString(xmlText, "text/xml");
+
+                let stopName = xml.documentElement.getAttribute("stop");
+                let message = xml.getElementsByTagName("message")[0]?.textContent || "No status available";
+
+                let inboundTrams = xml.getElementsByTagName("direction")[0]?.getElementsByTagName("tram");
+                let outboundTrams = xml.getElementsByTagName("direction")[1]?.getElementsByTagName("tram");
+
+                let output = `<h2>📍 ${stopName} Stop</h2>`;
+                output += `<p>🟢 Status: ${message}</p>`;
+
+                if (inboundTrams.length > 0) {
+                    output += "<h3>🚋 Inbound Trams:</h3><ul>";
+                    Array.from(inboundTrams).forEach(tram => {
+                        let destination = tram.getAttribute("destination");
+                        let dueMins = tram.getAttribute("dueMins") || "N/A";
+                        output += `<li>🚆 ${destination} - Arriving in ${dueMins} mins</li>`;
+                    });
+                    output += "</ul>";
+                } else {
+                    output += "<p>No inbound trams available.</p>";
+                }
+
+                if (outboundTrams.length > 0) {
+                    output += "<h3>🚋 Outbound Trams:</h3><ul>";
+                    Array.from(outboundTrams).forEach(tram => {
+                        let destination = tram.getAttribute("destination");
+                        let dueMins = tram.getAttribute("dueMins") || "N/A";
+                        output += `<li>🚆 ${destination} - Arriving in ${dueMins} mins</li>`;
+                    });
+                    output += "</ul>";
+                } else {
+                    output += "<p>No outbound trams available.</p>";
+                }
+
+                resultsDiv.classList.add("show");
+                resultsDiv.innerHTML = output;
+            } catch (error) {
+                resultsDiv.innerHTML = "<p class='error'>⚠️ There was an error fetching the data. Please try again.</p>";
+            }
+        }
+    </script>
+
+</body>
+</html>
